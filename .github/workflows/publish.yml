@@ -26,7 +26,7 @@ jobs:
       - name: Install build and test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake libncurses-dev dpkg-dev apt-utils python3-pyte openssh-server openssh-client sudo curl procps strace
+          sudo apt-get install -y build-essential cmake libncurses-dev dpkg-dev apt-utils python3-pyte openssh-server openssh-client sudo curl procps
       - name: Build Debian package and run unit tests
         run: |
           version=$(sed -n 's/^project(4agent VERSION \([^ ]*\).*/\1/p' CMakeLists.txt)
@@ -34,12 +34,7 @@ jobs:
       - name: Install package and run account, SSH and terminal tests
         run: |
           sudo apt-get install -y ./build-deb/*.deb
-          sudo du -sh /etc/skel
-          sudo strace -tt -f -e trace=process,flock,fcntl,fsync,clock_nanosleep,connect,poll,openat,mkdir -o /tmp/4agent-process.trace bash tests/integration.sh /usr/sbin/4agent || {
-            sudo tail -n 160 /tmp/4agent-process.trace
-            sudo systemctl status 4agent-expire.timer 4agent-expire.service --no-pager || true
-            exit 1
-          }
+          sudo bash tests/integration.sh /usr/sbin/4agent
           sudo python3 tests/tui_tests.py /usr/sbin/4agent
       - name: Build APT repository
         run: bash scripts/build-apt-repo.sh site build-deb/*.deb

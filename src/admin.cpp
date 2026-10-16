@@ -163,8 +163,13 @@ fs::path Admin::create(Options o) {
     bool policy_installed = false;
     auto sudoers = fs::path("/etc/sudoers.d")/("4agent-"+o.name);
     try {
+        // Hosts may have large or sensitive /etc/skel contents. Provision only our own shell files.
+        auto skeleton = stage.p/"skel";
+        directory(skeleton, 0700);
+        new_file(skeleton/".bashrc", "", 0644);
+        new_file(skeleton/".profile", "if [ -n \"$BASH_VERSION\" ] && [ -r \"$HOME/.bashrc\" ]; then\n    . \"$HOME/.bashrc\"\nfi\nPATH=\"$HOME/.local/bin:$HOME/bin:$PATH\"\nexport PATH\n", 0644);
         checked({"useradd", "--create-home", "--home-dir", home.string(), "--shell", "/bin/bash",
-                 "--password", "*", "--expiredate", utc(a.expires+86399, "%Y-%m-%d"), "--", o.name});
+                 "--skel", skeleton.string(), "--password", "*", "--expiredate", utc(a.expires+86399, "%Y-%m-%d"), "--", o.name});
         created = true;
         auto pw = getpwnam(o.name.c_str());
         if(!pw || pw->pw_uid < 1000) throw std::runtime_error("Cannot verify new account UID");

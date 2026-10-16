@@ -16,6 +16,7 @@ int number(const std::string& value, int low, int high);
 std::string serialize(const Account& account);
 Account deserialize(const std::string& line);
 std::string utc(std::int64_t epoch, const char* format = "%Y-%m-%d %H:%M:%S UTC");
+std::string ssh_expiry(std::int64_t epoch);
 struct Result { int code; std::string output; };
 Result run(const std::vector<std::string>& args);
 std::string checked(const std::vector<std::string>& args);

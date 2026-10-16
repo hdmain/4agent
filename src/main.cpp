@@ -82,6 +82,9 @@ int main(int argc, char** argv) {
         if(!(argc == 2 && std::string(argv[1]) == "--session")) {
             setenv("PATH", "/usr/sbin:/usr/bin:/sbin:/bin", 1);
             setenv("LC_ALL", "C", 1);
+            // Key options must use the daemon's system timezone, not a caller's TZ override.
+            unsetenv("TZ");
+            tzset();
         }
         if(argc == 2 && (std::string(argv[1]) == "--help" || std::string(argv[1]) == "-h")) { std::cout << help; return 0; }
         if(argc == 1) { agent::tui(); return 0; }

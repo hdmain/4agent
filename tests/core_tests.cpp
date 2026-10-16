@@ -1,5 +1,7 @@
 #include "core.hpp"
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
 #include <stdexcept>
 
 void require(bool b) { if(!b) throw std::runtime_error("Test assertion failed"); }
@@ -18,6 +20,11 @@ int main() {
     require(b.name == a.name && b.uid == a.uid && b.expires == a.expires && b.root == a.root);
     for(auto s : {"root 0 1 1", "agent_test 0 1 0", "agent_test 1234 -1 0", "agent_test 1234 100 2", "agent_test 1234 100 0 trailing"})
         rejects([&]{ agent::deserialize(s); });
+    require(agent::utc(0) == "1970-01-01 00:00:00 UTC");
+    setenv("TZ", "UTC", 1); tzset();
+    require(agent::ssh_expiry(0) == "19700101000000");
+    setenv("TZ", "America/New_York", 1); tzset();
+    require(agent::ssh_expiry(0) == "19691231190000");
     require(agent::utc(0) == "1970-01-01 00:00:00 UTC");
     auto r = agent::run({"/usr/bin/printf", "%s", "a; $(id) ' b"});
     require(r.code == 0 && r.output == "a; $(id) ' b");

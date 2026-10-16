@@ -53,6 +53,15 @@ std::string utc(std::int64_t epoch, const char* format) {
     if(!std::strftime(buffer, sizeof(buffer), format, &tm)) throw std::runtime_error("Time formatting failed");
     return buffer;
 }
+std::string ssh_expiry(std::int64_t epoch) {
+    // OpenSSH 8.x accepts only server-local timestamps; the UTC Z suffix needs newer SSH.
+    std::time_t time = epoch;
+    std::tm tm{};
+    if(!localtime_r(&time, &tm)) throw std::runtime_error("Invalid key expiration time");
+    char buffer[32];
+    if(!std::strftime(buffer, sizeof(buffer), "%Y%m%d%H%M%S", &tm)) throw std::runtime_error("Key expiration formatting failed");
+    return buffer;
+}
 Result run(const std::vector<std::string>& args) {
     if(args.empty()) throw std::runtime_error("Empty command");
     int pipefd[2];

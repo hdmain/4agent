@@ -28,7 +28,10 @@ extra_policy = pathlib.Path("/etc/sudoers.d") / ("4agent-" + names[3])
 def run(*args, ok=True):
     result = subprocess.run([str(a) for a in args], text=True, capture_output=True, timeout=30)
     if ok and result.returncode:
-        raise AssertionError(f"Command failed: {args[0:2]}: {result.stderr}")
+        diagnostic = result.stderr
+        if args[0] == "ssh" and (work / "sshd.log").exists():
+            diagnostic += "\nSSH server log:\n" + (work / "sshd.log").read_text()
+        raise AssertionError(f"Command failed: {args[0:2]}: {diagnostic}")
     return result
 
 
@@ -119,9 +122,10 @@ try:
             sock.bind(("127.0.0.1", 0))
             port = sock.getsockname()[1]
         config = work / "sshd_config"
-        config.write_text(f"Port {port}\nListenAddress 127.0.0.1\nHostKey {work}/host_key\nPidFile {work}/sshd.pid\nPasswordAuthentication no\nKbdInteractiveAuthentication no\nUsePAM no\nAllowUsers {names[0]} {names[1]}\nLogLevel ERROR\n")
+        config.write_text(f"Port {port}\nListenAddress 127.0.0.1\nHostKey {work}/host_key\nPidFile {work}/sshd.pid\nPasswordAuthentication no\nKbdInteractiveAuthentication no\nUsePAM no\nAllowUsers {names[0]} {names[1]}\nLogLevel VERBOSE\n")
         run(ssh_server, "-t", "-f", config)
-        sshd = subprocess.Popen([ssh_server, "-D", "-e", "-f", str(config)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        with (work / "sshd.log").open("w") as log:
+            sshd = subprocess.Popen([ssh_server, "-D", "-e", "-f", str(config)], stdout=subprocess.DEVNULL, stderr=log)
         for _ in range(50):
             try:
                 with socket.create_connection(("127.0.0.1", port), timeout=0.2):

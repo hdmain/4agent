@@ -183,7 +183,7 @@ fs::path Admin::create(Options o) {
         std::string session_path = AGENT_INSTALL_PATH;
         if(session_path.find_first_not_of("/abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-") != std::string::npos)
             throw std::runtime_error("Install prefix contains characters unsupported in SSH key options");
-        new_file(home/".ssh"/"authorized_keys", "command=\"" + session_path + " --session\",restrict,pty,expiry-time=\"" + utc(a.expires,"%Y%m%d%H%M%SZ") + "\" " + public_key);
+        new_file(home/".ssh"/"authorized_keys", "command=\"" + session_path + " --session\",restrict,pty,expiry-time=\"" + ssh_expiry(a.expires) + "\" " + public_key);
         new_file(home/".bash_history", "");
         FD bashrc(open((home/".bashrc").c_str(), O_WRONLY | O_APPEND | O_CREAT | O_NOFOLLOW | O_CLOEXEC, 0644));
         write_all(bashrc.n, "\n# 4agent interactive command history (user-editable)\nHISTFILE=$HOME/.bash_history\nHISTSIZE=10000\nHISTFILESIZE=20000\nHISTCONTROL=\nHISTIGNORE=\nHISTTIMEFORMAT='%F %T '\nshopt -s histappend\nPROMPT_COMMAND='history -a'\nhistory -a\n");

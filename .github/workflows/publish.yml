@@ -35,7 +35,7 @@ jobs:
         run: |
           sudo apt-get install -y ./build-deb/*.deb
           # The hosted image's runner policy is writable; visudo requires strict permissions.
-          if [ -f /etc/sudoers.d/runner ]; then sudo chmod 0440 /etc/sudoers.d/runner; fi
+          if sudo test -f /etc/sudoers.d/runner; then sudo chmod 0440 /etc/sudoers.d/runner; fi
           sudo bash tests/integration.sh /usr/sbin/4agent
           sudo python3 tests/tui_tests.py /usr/sbin/4agent
       - name: Build APT repository

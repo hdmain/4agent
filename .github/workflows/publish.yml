@@ -34,7 +34,8 @@ jobs:
       - name: Install package and run account, SSH and terminal tests
         run: |
           sudo apt-get install -y ./build-deb/*.deb
-          sudo strace -f -e trace=process,flock -o /tmp/4agent-process.trace bash tests/integration.sh /usr/sbin/4agent || {
+          sudo du -sh /etc/skel
+          sudo strace -tt -f -e trace=process,flock,fcntl,fsync,clock_nanosleep,connect,poll,openat,mkdir -o /tmp/4agent-process.trace bash tests/integration.sh /usr/sbin/4agent || {
             sudo tail -n 160 /tmp/4agent-process.trace
             sudo systemctl status 4agent-expire.timer 4agent-expire.service --no-pager || true
             exit 1

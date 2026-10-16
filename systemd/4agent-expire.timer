@@ -1,0 +1,11 @@
+[Unit]
+Description=Check temporary AI agent account expiration every 15 seconds
+
+[Timer]
+OnBootSec=5s
+OnUnitActiveSec=15s
+AccuracySec=1s
+Unit=4agent-expire.service
+
+[Install]
+WantedBy=timers.target

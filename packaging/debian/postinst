@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+if [ "$1" = configure ] && [ -d /run/systemd/system ]; then
+    systemctl daemon-reload
+    systemctl enable --now 4agent-expire.timer || {
+        echo "Enable account expiry with: sudo systemctl enable --now 4agent-expire.timer" >&2
+    }
+fi
+exit 0

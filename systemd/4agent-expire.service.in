@@ -1,0 +1,8 @@
+[Unit]
+Description=Remove expired temporary 4agent accounts
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=@CMAKE_INSTALL_PREFIX@/sbin/4agent --reap
+UMask=0077

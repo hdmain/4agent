@@ -1,0 +1,17 @@
+#!/bin/sh
+set -e
+if [ "$1" = remove ] || [ "$1" = deconfigure ]; then
+    if [ -d /var/lib/4agent ]; then
+        # Removing the expiration worker must not strand active temporary accounts.
+        accounts=$(/usr/sbin/4agent --list)
+        if [ "$accounts" != "No active managed accounts." ]; then
+            echo "Revoke temporary accounts with sudo 4agent --revoke USERNAME before removing 4agent." >&2
+            exit 1
+        fi
+    fi
+    if [ -d /run/systemd/system ]; then
+        systemctl disable --now 4agent-expire.timer || true
+        systemctl stop 4agent-expire.service || true
+    fi
+fi
+exit 0

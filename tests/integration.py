@@ -54,6 +54,7 @@ try:
     assert run("runuser", "-u", "nobody", "--", binary, "--list", ok=False).returncode
     create(names[0])
     create(names[1], "--root")
+    assert {p.name for p in pathlib.Path(f"/home/{names[0]}").iterdir()} == {".bashrc", ".profile", ".bash_history", ".ssh"}
     export = next(work.glob("4agent-*.txt"))
     assert export.stat().st_mode & 0o777 == 0o600
     assert export.stat().st_uid == 0
